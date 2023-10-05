@@ -1,0 +1,1 @@
+# ricty-nerd-fonts.patch
