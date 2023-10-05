@@ -1,0 +1,163 @@
+--- ricty_generator.sh	2023-10-02 11:53:37.317345709 +0900
++++ ricty_nerdfont_generator.sh	2023-10-05 22:59:50.471521187 +0900
+@@ -1,8 +1,8 @@
+ #!/bin/sh
+ 
+ #
+-# Ricty Generator
+-ricty_version="4.1.1"
++# Ricty nerd font Generator
++ricty_version="4.1.1nf"
+ #
+ 
+ #
+@@ -32,7 +32,7 @@
+ #
+ 
+ #
+-# This script is to generate Ricty font from Inconsolata and Migu 1M.
++# This script is to generate Ricty nerd font from Inconsolata nerd font and Migu 1M.
+ # The generated fonts are licensed by both SIL Open Font License (OFL)
+ # Version 1.1 and IPA Font License Agreement v1.0.
+ # Due to OFL 1.1 Section 5, it is PROHIBITED to distribute the generated fonts.
+@@ -43,9 +43,8 @@
+ #
+ # 1. Install FontForge from https://fontforge.github.io/ or by a package manager
+ #
+-# 2. Get Inconsolata (2.000 or later)
+-#    from https://fonts.google.com/specimen/Inconsolata (release)
+-#    or from https://github.com/google/fonts/tree/master/ofl/inconsolata (upstream)
++# 2. Get Inconsolata nerd font (3.000)
++#    from https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/Inconsolata
+ #
+ # 3. Get Migu 1M (2015.0712 or later)
+ #    from http://mix-mplus-ipa.osdn.jp/
+@@ -53,12 +52,12 @@
+ # 4. Run this script by
+ #        % ./ricty_generator.sh auto
+ #    or by
+-#        % ./ricty_generator.sh Inconsolata-{Regular,Bold}.ttf migu-1m-{regular,bold}.ttf
++#        % ./ricty_generator.sh InconsolataNerdFont-{Regular,Bold}.ttf migu-1m-{regular,bold}.ttf
+ #
+ 
+ # Set familyname
+ ricty_familyname="Ricty"
+-ricty_familyname_suffix=""
++ricty_familyname_suffix="NerdFont"
+ 
+ # Set ascent and descent (line width parameters)
+ ricty_ascent=835
+@@ -78,7 +77,7 @@
+ 
+ # Set flags
+ leaving_tmp_flag="false"
+-fullwidth_ambiguous_flag="true"
++fullwidth_ambiguous_flag="false"
+ scaling_down_flag="true"
+ 
+ # Set non-Discorded characters
+@@ -86,8 +85,8 @@
+ 
+ # Set filenames
+ modified_inconsolata_generator="modified_inconsolata_generator.pe"
+-modified_inconsolata_regular="Modified-Inconsolata-Regular.sfd"
+-modified_inconsolata_bold="Modified-Inconsolata-Bold.sfd"
++modified_inconsolata_regular="Modified-InconsolataNerdFont-Regular.sfd"
++modified_inconsolata_bold="Modified-InconsolataNerdFont-Bold.sfd"
+ modified_migu1m_generator="modified_migu1m_generator.pe"
+ modified_migu1m_regular="Modified-migu-1m-regular.sfd"
+ modified_migu1m_bold="Modified-migu-1m-bold.sfd"
+@@ -106,7 +105,7 @@
+ Copyright (c) 2011-2017 Yasunori Yusa
+ All rights reserved.
+ 
+-This script is to generate Ricty font from Inconsolata and Migu 1M.
++This script is to generate Ricty font from InconsolataNerdFont and Migu 1M.
+ The generated fonts are licensed by both SIL Open Font License (OFL)
+ Version 1.1 and IPA Font License Agreement v1.0.
+ Due to OFL 1.1 Section 5, it is PROHIBITED to distribute the generated fonts.
+@@ -117,7 +116,7 @@
+ ricty_generator_help()
+ {
+     echo "Usage: ricty_generator.sh [options] auto"
+-    echo "       ricty_generator.sh [options] Inconsolata-{Regular,Bold}.ttf migu-1m-{regular,bold}.ttf"
++    echo "       ricty_generator.sh [options] InconsolataNerdFont-{Regular,Bold}.ttf migu-1m-{regular,bold}.ttf"
+     echo ""
+     echo "Options:"
+     echo "  -h                     Display this information"
+@@ -130,7 +129,6 @@
+     echo "  -W                     Widen line space extremely"
+     echo "  -Z unicode             Set visible zenkaku space copied from another glyph"
+     echo "  -z                     Disable visible zenkaku space"
+-    echo "  -a                     Disable fullwidth ambiguous charactors"
+     echo "  -s                     Disable scaling down Migu 1M"
+     echo "  -d characters          Set non-Discorded characters in Ricty Discord"
+     exit 0
+@@ -180,10 +178,6 @@
+             echo "Option: Disable visible zenkaku space"
+             zenkaku_space_glyph="0u3000"
+             ;;
+-        "a" )
+-            echo "Option: Disable fullwidth ambiguous charactors"
+-            fullwidth_ambiguous_flag="false"
+-            ;;
+         "s" )
+             echo "Option: Disable scaling down Migu 1M"
+             scaling_down_flag="false"
+@@ -210,11 +204,11 @@
+     done
+     fonts_directories=$tmp
+     # Search Inconsolata
+-    input_inconsolata_regular=`find $fonts_directories -follow -name Inconsolata-Regular.ttf | head -n 1`
+-    input_inconsolata_bold=`find $fonts_directories -follow -name Inconsolata-Bold.ttf | head -n 1`
++    input_inconsolata_regular=`find $fonts_directories -follow -name InconsolataNerdFont-Regular.ttf | head -n 1`
++    input_inconsolata_bold=`find $fonts_directories -follow -name InconsolataNerdFont-Bold.ttf | head -n 1`
+     if [ -z "${input_inconsolata_regular}" -o -z "${input_inconsolata_bold}" ]
+     then
+-        echo "Error: Inconsolata-Regular.ttf and/or Inconsolata-Bold.ttf not found" >&2
++        echo "Error: InconsolataNerdFont-Regular.ttf and/or InconsolataNerdFont-Bold.ttf not found" >&2
+         exit 1
+     fi
+     # Search Migu 1M
+@@ -251,10 +245,10 @@
+         exit 1
+     fi
+     # Check filename
+-    [ "$(basename $input_inconsolata_regular)" != "Inconsolata-Regular.ttf" ] &&
+-        echo "Warning: ${input_inconsolata_regular} does not seem to be Inconsolata Regular" >&2
+-    [ "$(basename $input_inconsolata_bold)" != "Inconsolata-Bold.ttf" ] &&
+-        echo "Warning: ${input_inconsolata_regular} does not seem to be Inconsolata Bold" >&2
++    [ "$(basename $input_inconsolata_regular)" != "InconsolataNerdFont-Regular.ttf" ] &&
++        echo "Warning: ${input_inconsolata_regular} does not seem to be InconsolataNerdFont Regular" >&2
++    [ "$(basename $input_inconsolata_bold)" != "InconsolataNerdFont-Bold.ttf" ] &&
++        echo "Warning: ${input_inconsolata_regular} does not seem to be InconsolataNerdFont Bold" >&2
+     [ "$(basename $input_migu1m_regular)" != "migu-1m-regular.ttf" ] &&
+         echo "Warning: ${input_migu1m_regular} does not seem to be Migu 1M Regular" >&2
+     [ "$(basename $input_migu1m_bold)" != "migu-1m-bold.ttf" ] &&
+@@ -294,7 +288,7 @@
+ cat > ${tmpdir}/${modified_inconsolata_generator} << _EOT_
+ #!$fontforge_command -script
+ 
+-Print("Generate modified Inconsolata")
++Print("Generate modified InconsolataNerdFont")
+ 
+ # Set parameters
+ input_list  = ["${input_inconsolata_regular}",    "${input_inconsolata_bold}"]
+@@ -744,7 +738,7 @@
+ flag_comma="true"
+ flag_hyphen="true"
+ flag_period="true"
+-flag_0="true"
++flag_0="false"
+ flag_7="true"
+ flag_colon="true"
+ flag_semicolon="true"
+@@ -755,7 +749,7 @@
+ flag_asciicircum="true"
+ flag_grave="true"
+ flag_l="true"
+-flag_r="true"
++flag_r="false"
+ flag_z="true"
+ flag_bar="true"
+ flag_asciitilde="true"
